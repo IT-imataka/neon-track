@@ -100,7 +100,7 @@ export default function App(){
 	useEffect (() => {
 		const tick = async () => {
 			try {
-				const output = await invoke<string>("now-playing");
+				const output = await invoke<string>("now_playing");
 				setTrack(parse(output));
 				setError(null);
 			} catch (e) {

@@ -17,7 +17,7 @@ fn run_osascript(script : &str, args : &[&str]) -> Result<String,String> {
 	let output = Command::new("osascript")
 	.arg("-e")
 	.arg(script)
-	.arg(args)
+	.args(args)
 	.output()
 	.map_err(|e| format!("osascriptを起動できません:{e}"))?;
 
@@ -32,7 +32,7 @@ fn run_osascript(script : &str, args : &[&str]) -> Result<String,String> {
 async fn now_playing(state :State<'_, AppState>) -> Result<String,String> {
 	let art_path = std::env::temp_dir()
 	.join("neon-track_artwork")
-	.to_string_losy()
+	.to_string_lossy()
 	.into_owned();
 
 	let last_id = state.last_id.lock().unwrap().clone();
@@ -49,7 +49,7 @@ async fn now_playing(state :State<'_, AppState>) -> Result<String,String> {
 #[tauri::command]
 async fn music_command(action: String) -> Result<(), String> {
 	// 決まった操作だけを受け付ける
-	let cmd = match actioin.as_str() {
+	let cmd = match action.as_str() {
 		"playpause" => "playpause",
 		"next" => "next track",
 		"previous" => "previous track",
@@ -58,7 +58,8 @@ async fn music_command(action: String) -> Result<(), String> {
 		"repeat_one" => "set song repeat to one",
 		 _ => return Err(format!("不明を操作:{action}")),
 	};
-	run_osascript(&format!("tell appplication \"Music\" to {cmd}"), &[])?;
+	run_osascript(&format!("tell application \"Music\" to {cmd}"), &[])?;
+	Ok(())
 }
 
 
