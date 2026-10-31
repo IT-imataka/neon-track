@@ -5,7 +5,6 @@ import { invoke } from "@tauri-apps/api/core";
 
 const SEP = "\x1f";
 const SEGMENTS = 40;
-const ART_SRC = "edgerunners-hud.widget/cache/artwork.jpg";
 const NEXT_REPEAT : Record<RepeatMode,RepeatMode> = { off: "all", all: "one", one: "off" };
 const REPEAT_LABEL : Record<RepeatMode,string> = { off: "リピートなし", all: "全曲リピート", one: "1曲リピート" };
 
@@ -20,10 +19,9 @@ type Track = {
 	position : number,
 	id : string,
 	repeat : RepeatMode,
-	hasArt : boolean
 }
 
-type HudProps = { track : Track};
+type HudProps = { track : Track, artwork : string | null};
 
 type MusicAction = "playpause" | "next" | "previous" | `repeat_${RepeatMode}`;
 
@@ -31,7 +29,7 @@ type MusicAction = "playpause" | "next" | "previous" | `repeat_${RepeatMode}`;
 const parse = (output :string) : Track | null => {
 	const raw = (output || "").trim();
 	if (!raw || raw === "stopped") return null;
-	const [state, name, artist, album, duration, position, id, repeat, hasArt] = raw.split(SEP);
+	const [state, name, artist, album, duration, position, id, repeat] = raw.split(SEP);
 	const isRepeatMode = (v :string) : v is RepeatMode =>
 		v === "off" || v === "all" || v === "one";
 	return {
@@ -43,7 +41,6 @@ const parse = (output :string) : Track | null => {
 		position: Number(position) || 0,
 		id,
 		repeat: isRepeatMode(repeat) ? repeat : "off",
-		hasArt: hasArt === "1",
 	};
 };
 
@@ -94,8 +91,9 @@ const handleMouseDown = (e: React.MouseEvent) => {
 };
 
 export default function App(){
-	const [track,setTrack] = useState<Track | null>(null);
-	const [error,setError] = useState<string | null>(null);
+	const [track, setTrack] = useState<Track | null>(null);
+	const [error, setError] = useState<string | null>(null);
+	const [artwork, setArtwork] = useState<string | null>(null);
 
 	useEffect (() => {
 		const tick = async () => {
@@ -111,26 +109,33 @@ export default function App(){
 		const id = setInterval(tick,1000);
 		return () => clearInterval(id);
 	},[])
+
+	const trackId = track?.id;
+	useEffect(() => {
+		if (!trackId) return;
+		invoke<string | null>("artwork").then(setArtwork).catch(console.error);
+	},[trackId]);
 	
 	if (error) return <Idle message = {`エラー:${error}`}/>
 	if (!track) return <Idle message ="ミュージックで曲を再生すると、ここに表示されます"/>;
-	return <Hud track={track}/>
+	return <Hud track={track} artwork={artwork}/>
 }
 
-const Hud = ({track : t} : HudProps) => {
+const Hud = ({track : t, artwork} : HudProps) => {
 	const playing = t.state === "playing";
 	const ratio = t.duration > 0 ? Math.min(t.position / t.duration, 1) : 0;
   const filled = Math.round(ratio * SEGMENTS);
 
   return (
+		
     <div className={`erh ${playing ? "is-playing" : "is-paused"}`} onMouseDown={handleMouseDown}>
       {/* <style>{STYLE}</style> */}
       <div className="erh-frame">
         <div className="erh-panel">
           <div className="erh-art">
             <div className="erh-art-inner">
-              {t.hasArt ? (
-                <img src={`${ART_SRC}?v=${encodeURIComponent(t.id)}`} />
+              {artwork ? (
+                <img src={artwork} />
               ) : (
                 <div className="erh-art-empty">アートワークなし</div>
               )}
@@ -183,56 +188,3 @@ const Hud = ({track : t} : HudProps) => {
     </div>
   );
 }
-
-// function App() {
-//   const [greetMsg, setGreetMsg] = useState("");
-//   const [name, setName] = useState("");
-
-//   async function greet() {
-//     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-//     setGreetMsg(await invoke("greet", { name }));
-//   }
-// 	const handleMouseDown = (e: React.MouseEvent) => {
-// 		if ((e.target as HTMLElement).closest("button,a,input")){
-// 			return;
-// 		}
-// 		getCurrentWindow().startDragging();
-// 	};
-
-//   return (
-//     <main className="container" onMouseDown={handleMouseDown}> 
-//       <h1>Welcome to Tauri + React</h1>
-
-//       <div className="row">
-//         <a href="https://vite.dev" target="_blank">
-//           <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-//         </a>
-//         <a href="https://tauri.app" target="_blank">
-//           <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-//         </a>
-//         <a href="https://react.dev" target="_blank">
-//           <img src={reactLogo} className="logo react" alt="React logo" />
-//         </a>
-//       </div>
-//       <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-//       <form
-//         className="row"
-//         onSubmit={(e) => {
-//           e.preventDefault();
-//           greet();
-//         }}
-//       >
-//         <input
-//           id="greet-input"
-//           onChange={(e) => setName(e.currentTarget.value)}
-//           placeholder="Enter a name..."
-//         />
-//         <button type="submit">Greet</button>
-//       </form>
-//       <p>{greetMsg}</p>
-//     </main>
-//   );
-// }
-
-// export default App;
