@@ -1,0 +1,373 @@
+html, body, #root {
+  background: transparent !important;
+}
+
+.logo.vite:hover {
+  filter: drop-shadow(0 0 2em #747bff);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafb);
+}
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  color: #0f0f0f;
+  background-color: #f6f6f6;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+.container {
+  margin: 0;
+  padding-top: 10vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: 0.75s;
+}
+
+.logo.tauri:hover {
+  filter: drop-shadow(0 0 2em #24c8db);
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #535bf2;
+}
+
+h1 {
+  text-align: center;
+}
+
+input,
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  color: #0f0f0f;
+  background-color: #ffffff;
+  transition: border-color 0.25s;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: #396cd8;
+}
+button:active {
+  border-color: #396cd8;
+  background-color: #e8e8e8;
+}
+
+input,
+button {
+  outline: none;
+}
+
+#greet-input {
+  margin-right: 5px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #f6f6f6;
+    background-color: #2f2f2f;
+  }
+
+  a:hover {
+    color: #24c8db;
+  }
+
+  input,
+  button {
+    color: #ffffff;
+    background-color: #0f0f0f98;
+  }
+  button:active {
+    background-color: #0f0f0f69;
+  }
+}
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap");
+
+.erh {
+  --yellow: #fcee0a;
+  --yellow-dim: rgba(252, 238, 10, 0.55);
+  --yellow-faint: rgba(252, 238, 10, 0.14);
+  --cyan: #00f0ff;
+  --magenta: #ff2a6d;
+  --panel: rgba(0, 0, 0, 0.74);
+  --cut: 26px;
+  font-family: "Rajdhani", "Avenir Next Condensed", "Hiragino Sans", sans-serif;
+  color: var(--yellow);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  filter: drop-shadow(0 0 14px rgba(252, 238, 10, 0.28));
+}
+
+/* 外枠:切り欠きコーナーの黄色ライン */
+/* 外枠:疑似要素に枠線だけを描く(中身は切り抜かない) */
+.erh-frame {
+  --b: 2px;      /* 線の太さ */
+  --d: 0.83px;   /* 斜め部分の補正 */
+  position: relative;
+  padding: var(--b);
+}
+.erh-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: var(--yellow);
+  clip-path: polygon(evenodd,
+    0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 0,
+    var(--b) var(--b),
+    calc(100% - var(--cut) - var(--d)) var(--b),
+    calc(100% - var(--b)) calc(var(--cut) + var(--d)),
+    calc(100% - var(--b)) calc(100% - var(--b)),
+    calc(var(--cut) + var(--d)) calc(100% - var(--b)),
+    var(--b) calc(100% - var(--cut) - var(--d)),
+    var(--b) var(--b)
+  );
+}
+.erh-panel {
+  display: flex;
+  gap: 28px;
+  padding: 24px 30px 24px 24px;
+  background: var(--panel);
+  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+}
+
+/* アートワーク:シアンとマゼンタの色ズレを背後に置く */
+.erh-art {
+  position: relative;
+  flex: none;
+  width: 280px;
+  height: 280px;
+}
+.erh-art::before,
+.erh-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.erh-art::before { background: var(--cyan); transform: translate(-7px, -7px); }
+.erh-art::after  { background: var(--magenta); transform: translate(7px, 7px); }
+.erh-art-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+.erh-art-inner img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.3s;
+}
+.erh-art-inner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.22) 2px 3px);
+}
+.erh-art-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 15px;
+  color: var(--yellow-dim);
+  background: repeating-linear-gradient(45deg, var(--yellow-faint) 0 10px, transparent 10px 20px);
+}
+.is-paused .erh-art-inner img { filter: grayscale(0.7) brightness(0.6); }
+
+/* 曲情報 */
+.erh-info {
+  display: flex;
+  flex-direction: column;
+  width: 360px;
+  min-width: 0;
+}
+.erh-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--cyan);
+}
+.erh-status::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+.is-paused .erh-status { color: var(--magenta); }
+
+.erh-title {
+  position: relative;
+  margin-top: 16px;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 12px rgba(252, 238, 10, 0.4);
+}
+/* 曲が変わった瞬間だけ1回グリッチする */
+.erh-title::before,
+.erh-title::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  clip-path: inset(100% 0 0 0);
+}
+.erh-title::before { color: var(--cyan);    animation: erh-glitch-a 0.7s steps(1) 1; }
+.erh-title::after  { color: var(--magenta); animation: erh-glitch-b 0.7s steps(1) 1; }
+@keyframes erh-glitch-a {
+  0%   { clip-path: inset(10% 0 55% 0); transform: translate(-4px, 0); }
+  25%  { clip-path: inset(60% 0 10% 0); transform: translate(3px, 0); }
+  50%  { clip-path: inset(30% 0 40% 0); transform: translate(-2px, 0); }
+  75%  { clip-path: inset(80% 0 5% 0);  transform: translate(2px, 0); }
+  100% { clip-path: inset(100% 0 0 0);  transform: none; }
+}
+@keyframes erh-glitch-b {
+  0%   { clip-path: inset(50% 0 20% 0); transform: translate(4px, 0); }
+  25%  { clip-path: inset(5% 0 70% 0);  transform: translate(-3px, 0); }
+  50%  { clip-path: inset(70% 0 10% 0); transform: translate(2px, 0); }
+  75%  { clip-path: inset(20% 0 60% 0); transform: translate(-2px, 0); }
+  100% { clip-path: inset(100% 0 0 0);  transform: none; }
+}
+
+.erh-artist,
+.erh-album {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.erh-artist {
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+.erh-album {
+  margin-top: 2px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--yellow-dim);
+}
+
+/* 再生位置:斜めのセグメントバー */
+.erh-bar {
+  display: flex;
+  gap: 3px;
+  margin-top: auto;
+}
+.erh-seg {
+  flex: 1;
+  height: 12px;
+  background: var(--yellow-faint);
+  transform: skewX(-24deg);
+}
+.erh-seg.on   { background: var(--yellow); }
+.erh-seg.head { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+
+.erh-time {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--yellow-dim);
+}
+
+/* 操作ボタン */
+.erh-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.erh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  min-width: 46px;
+  padding: 0 12px;
+  border: none;
+  outline: none;
+  font: 600 13px "Rajdhani", "Hiragino Sans", sans-serif;
+  color: var(--yellow);
+  background: var(--yellow-faint);
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+}
+.erh-btn:hover,
+.erh-btn:focus-visible { background: var(--yellow); color: #000; }
+.erh-btn svg { width: 17px; height: 17px; fill: currentColor; }
+.erh-btn svg.stroke { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; }
+.erh-btn.main { min-width: 60px; background: var(--yellow); color: #000; }
+.erh-btn.main:hover,
+.erh-btn.main:focus-visible { background: var(--cyan); }
+.erh-btn.repeat { margin-left: auto; }
+.erh-btn.repeat.active { color: var(--cyan); background: rgba(0, 240, 255, 0.16); }
+.erh-btn.repeat.active:hover,
+.erh-btn.repeat.active:focus-visible { background: var(--cyan); color: #000; }
+
+/* 何も再生していないとき */
+.erh-idle {
+  padding: 18px 30px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--yellow-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .erh-title::before, .erh-title::after { animation: none; }
+}
