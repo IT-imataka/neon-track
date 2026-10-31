@@ -15,12 +15,13 @@
     {
       "title": "neon-track",
       "width": 720,
-      "height": 340,
+      "height": 360,
       "transparent": true,
 	    "titleBarStyle": "Overlay",
 			"hiddenTitle": true,
       "resizable": false,
-      "shadow": false
+      "shadow": false,
+			"trafficLightPosition": { "x": 20, "y": 30 }
     }
   ],
     "security": {

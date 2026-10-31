@@ -164,7 +164,7 @@ button {
 .erh-panel {
   display: flex;
   gap: 28px;
-  padding: 24px 30px 24px 24px;
+  padding: 39px 30px 24px 24px;
   background: var(--panel);
   clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
 }
