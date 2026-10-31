@@ -1,9 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import "./App.css";
-
-export const command = "bash edgerunners-hud.widget/lib/now-playing.sh";
-export const refreshFrequency = 1000;
+import { invoke } from "@tauri-apps/api/core";
 
 const SEP = "\x1f";
 const SEGMENTS = 40;
@@ -26,6 +24,9 @@ type Track = {
 }
 
 type HudProps = { track : Track};
+
+type MusicAction = "playpause" | "next" | "previous" | `repeat_${RepeatMode}`;
+
 
 const parse = (output :string) : Track | null => {
 	const raw = (output || "").trim();
@@ -51,10 +52,9 @@ const fmt = (sec : number) => {
 	return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 };
 
-const music = (cmd :string) => console.log("music", cmd);
-
-const DUMMY =
-  "playing\x1fI Really Want to Stay at Your House\x1fSamuel Kim & Lorien\x1fSingle\x1f247\x1f30\x1fABC123\x1fone\x1f0";
+const music = (action: MusicAction) => {
+	invoke("music_command", { action }).catch(console.error);
+}
 
 const Icon = {
 	prev: (
@@ -76,11 +76,12 @@ const Icon = {
 	),
 };
 
-const Idle = () => (
+type IdleProps = { message : string };
+
+const Idle = ({message} : IdleProps) => (
   <div className="erh">
-    {/* <style>{STYLE}</style> */}
     <div className="erh-frame">
-      <div className="erh-panel erh-idle">ミュージックで曲を再生すると、ここに表示されます</div>
+      <div className="erh-panel erh-idle">{message}</div>
     </div>
   </div>
 );
@@ -93,9 +94,26 @@ const handleMouseDown = (e: React.MouseEvent) => {
 };
 
 export default function App(){
-	const [track] = useState<Track | null>(parse(DUMMY));
+	const [track,setTrack] = useState<Track | null>(null);
+	const [error,setError] = useState<string | null>(null);
 
-	if (!track) return <Idle/>;
+	useEffect (() => {
+		const tick = async () => {
+			try {
+				const output = await invoke<string>("now-playing");
+				setTrack(parse(output));
+				setError(null);
+			} catch (e) {
+				setError(String(e));
+			}
+		};
+		tick();
+		const id = setInterval(tick,1000);
+		return () => clearInterval(id);
+	},[])
+	
+	if (error) return <Idle message = {`エラー:${error}`}/>
+	if (!track) return <Idle message ="ミュージックで曲を再生すると、ここに表示されます"/>;
 	return <Hud track={track}/>
 }
 
@@ -141,19 +159,19 @@ const Hud = ({track : t} : HudProps) => {
             </div>
 
             <div className="erh-ctrl">
-              <button className="erh-btn" title="前の曲" onClick={() => music("previous track")}>
+              <button className="erh-btn" title="前の曲" onClick={() => music("previous")}>
                 {Icon.prev}
               </button>
               <button className="erh-btn main" title={playing ? "一時停止" : "再生"} onClick={() => music("playpause")}>
                 {playing ? Icon.pause : Icon.play}
               </button>
-              <button className="erh-btn" title="次の曲" onClick={() => music("next track")}>
+              <button className="erh-btn" title="次の曲" onClick={() => music("next")}>
                 {Icon.next}
               </button>
               <button
                 className={`erh-btn repeat${t.repeat !== "off" ? " active" : ""}`}
                 title="クリックで切り替え"
-                onClick={() => music(`set song repeat to ${NEXT_REPEAT[t.repeat] || "all"}`)}
+                onClick={() => music(`repeat_${NEXT_REPEAT[t.repeat]}`)}
               >
                 {Icon.repeat}
                 {REPEAT_LABEL[t.repeat] || REPEAT_LABEL.off}
