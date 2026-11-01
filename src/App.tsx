@@ -3,12 +3,15 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import "./App.css";
 import { invoke } from "@tauri-apps/api/core";
 
+type RepeatMode = "off" | "all" | "one";
+type Theme = "david" | "lucy";
+
 const SEP = "\x1f";
 const SEGMENTS = 40;
 const NEXT_REPEAT : Record<RepeatMode,RepeatMode> = { off: "all", all: "one", one: "off" };
 const REPEAT_LABEL : Record<RepeatMode,string> = { off: "リピートなし", all: "全曲リピート", one: "1曲リピート" };
-
-type RepeatMode = "off" | "all" | "one";
+const THEME_LABEL: Record<Theme, string> = { david: "DAVID", lucy: "LUCY" };
+const THEME_KEY = "neon-track:theme";
 
 type Track = {
 	state : string,
@@ -21,10 +24,27 @@ type Track = {
 	repeat : RepeatMode,
 }
 
-type HudProps = { track : Track, artwork : string | null};
+type HudProps = {
+	track : Track,
+	artwork : string | null,
+	theme : Theme,
+	onToggleTheme :() => void
+};
 
 type MusicAction = "playpause" | "next" | "previous" | `repeat_${RepeatMode}`;
 
+// 保存されている値が正しいテーマ名か確認する型ガード
+const isTheme = (v: string | null): v is Theme => v === "david" || v === "lucy";
+
+// 保存テーマの読み込み
+const loadTheme = () :Theme => {
+	try{
+		const saved = localStorage.getItem(THEME_KEY);
+		return isTheme(saved) ? saved : "david";
+	} catch {
+		return "david";
+	}
+}
 
 const parse = (output :string) : Track | null => {
 	const raw = (output || "").trim();
@@ -73,10 +93,10 @@ const Icon = {
 	),
 };
 
-type IdleProps = { message : string };
+type IdleProps = { message : string, theme : Theme };
 
-const Idle = ({message} : IdleProps) => (
-  <div className="erh">
+const Idle = ({message, theme} : IdleProps) => (
+  <div className="erh" data-theme={theme}>
     <div className="erh-frame">
       <div className="erh-panel erh-idle">{message}</div>
     </div>
@@ -94,7 +114,22 @@ export default function App(){
 	const [track, setTrack] = useState<Track | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [artwork, setArtwork] = useState<string | null>(null);
+	const [theme, setTheme] = useState<Theme>(loadTheme);
 
+	// テーマの描画
+	useEffect(() => {
+		try {
+			localStorage.setItem(THEME_KEY, theme);
+		} catch {
+		}
+	},[theme])
+
+	const toggleTheme = () => {
+		setTheme(t => t === "david" ? "lucy" : "david");
+		console.log("テーマが呼ばれた",theme);
+	}
+
+	// 曲情報の描画
 	useEffect (() => {
 		const tick = async () => {
 			try {
@@ -110,26 +145,26 @@ export default function App(){
 		return () => clearInterval(id);
 	},[])
 
+	// アートワーク情報の描画
 	const trackId = track?.id;
 	useEffect(() => {
 		if (!trackId) return;
 		invoke<string | null>("artwork").then(setArtwork).catch(console.error);
 	},[trackId]);
 	
-	if (error) return <Idle message = {`エラー:${error}`}/>
-	if (!track) return <Idle message ="ミュージックで曲を再生すると、ここに表示されます"/>;
-	return <Hud track={track} artwork={artwork}/>
+	if (error) return <Idle message = {`エラー:${error}`} theme={theme}/>
+	if (!track) return <Idle message ="ミュージックで曲を再生すると、ここに表示されます" theme={theme}/>;
+	return <Hud track={track} artwork={artwork} onToggleTheme={toggleTheme} theme={theme}/>
 }
 
-const Hud = ({track : t, artwork} : HudProps) => {
+const Hud = ({track : t, artwork, theme, onToggleTheme} : HudProps) => {
 	const playing = t.state === "playing";
 	const ratio = t.duration > 0 ? Math.min(t.position / t.duration, 1) : 0;
   const filled = Math.round(ratio * SEGMENTS);
 
   return (
 		
-    <div className={`erh ${playing ? "is-playing" : "is-paused"}`} onMouseDown={handleMouseDown}>
-      {/* <style>{STYLE}</style> */}
+    <div className={`erh ${playing ? "is-playing" : "is-paused"}`} data-theme={theme} onMouseDown={handleMouseDown}>
       <div className="erh-frame">
         <div className="erh-panel">
           <div className="erh-art">
@@ -144,6 +179,10 @@ const Hud = ({track : t, artwork} : HudProps) => {
 
           <div className="erh-info">
             <div className="erh-status">{playing ? "再生中" : "一時停止中"}</div>
+						<button className="erh-theme" title="テーマを切り替え" onClick={onToggleTheme} >
+                <span className="erh-theme-dot" />
+                {THEME_LABEL[theme]}
+              </button>
 
             {/* key に曲IDを渡し、曲が変わるたびにグリッチを再生させる */}
             <div className="erh-title" key={t.id} data-text={t.name}>{t.name}</div>
