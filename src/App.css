@@ -121,18 +121,68 @@ button {
   }
 }
 .erh {
-  --yellow: #fcee0a;
-  --yellow-dim: rgba(252, 238, 10, 0.55);
-  --yellow-faint: rgba(252, 238, 10, 0.14);
-  --cyan: #00f0ff;
-  --magenta: #ff2a6d;
+	/* 機能色:テーマに関係なく固定 */
+	--status-playing: #00f0ff;
+  --status-paused: #ff2a6d;
+
+  /* テーマ色:デイビッド(デフォルト) */
+  --main: #fcee0a;
+  --main-dim: rgba(252, 238, 10, 0.55);
+  --main-faint: rgba(252, 238, 10, 0.14);
+  --sub: #9dff3a;
+	--sub-faint: rgba(157, 255, 58, 0.16); 
+  --glow: rgba(252, 238, 10, 0.4);
   --panel: rgba(0, 0, 0, 0.74);
   --cut: 26px;
   font-family: "Rajdhani", "Avenir Next Condensed", "Hiragino Sans", sans-serif;
-  color: var(--yellow);
+  color: var(--main);
   -webkit-font-smoothing: antialiased;
   user-select: none;
   filter: drop-shadow(0 0 14px rgba(252, 238, 10, 0.28));
+}
+
+/* テーマ色:ルーシー(デフォルト) */
+.erh[data-theme="lucy"] {
+  --main: #f2eeff;
+  --main-dim: rgba(242, 238, 255, 0.6);
+  --main-faint: rgba(184, 164, 255, 0.18);
+  --sub: #b8a4ff;
+	--sub-faint: rgba(184, 164, 255, 0.18);
+  --glow: rgba(184, 164, 255, 0.45);
+  --panel: rgba(18, 10, 32, 0.78);
+}
+
+.erh-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.erh-theme {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 10px;
+  border: 1px solid var(--main-dim);
+  background: transparent;
+  color: var(--main-dim);
+  font: 600 12px "Rajdhani", "Hiragino Sans", sans-serif;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+.erh-theme:hover,
+.erh-theme:focus-visible {
+  border-color: var(--main);
+  background: var(--main);
+  color: #000;
+}
+
+/* テーマのメイン色とサブ色を、斜めに半分ずつ見せる小さな印 */
+.erh-theme-dot {
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, var(--main) 50%, var(--sub) 50%);
 }
 
 /* 外枠:切り欠きコーナーの黄色ライン */
@@ -149,7 +199,7 @@ button {
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  background: var(--yellow);
+  background: var(--main);
   clip-path: polygon(evenodd,
     0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 0,
     var(--b) var(--b),
@@ -182,8 +232,8 @@ button {
   position: absolute;
   inset: 0;
 }
-.erh-art::before { background: var(--cyan); transform: translate(-7px, -7px); }
-.erh-art::after  { background: var(--magenta); transform: translate(7px, 7px); }
+.erh-art::before { background: var(--status-playing); transform: translate(-7px, -7px); }
+.erh-art::after  { background: var(--status-paused); transform: translate(7px, 7px); }
 .erh-art-inner {
   position: relative;
   z-index: 1;
@@ -212,8 +262,8 @@ button {
   justify-content: center;
   height: 100%;
   font-size: 15px;
-  color: var(--yellow-dim);
-  background: repeating-linear-gradient(45deg, var(--yellow-faint) 0 10px, transparent 10px 20px);
+  color: var(--main-dim);
+  background: repeating-linear-gradient(45deg, var(--main-faint) 0 10px, transparent 10px 20px);
 }
 .is-paused .erh-art-inner img { filter: grayscale(0.7) brightness(0.6); }
 
@@ -231,7 +281,7 @@ button {
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.04em;
-  color: var(--cyan);
+  color: var(--status-playing);
 }
 .erh-status::before {
   content: "";
@@ -240,7 +290,7 @@ button {
   background: currentColor;
   box-shadow: 0 0 8px currentColor;
 }
-.is-paused .erh-status { color: var(--magenta); }
+.is-paused .erh-status { color: var(--status-paused); }
 
 .erh-title {
   position: relative;
@@ -251,7 +301,7 @@ button {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 0 12px rgba(252, 238, 10, 0.4);
+  text-shadow: 0 0 12px var(--glow);
 }
 /* 曲が変わった瞬間だけ1回グリッチする */
 .erh-title::before,
@@ -264,8 +314,8 @@ button {
   text-overflow: ellipsis;
   clip-path: inset(100% 0 0 0);
 }
-.erh-title::before { color: var(--cyan);    animation: erh-glitch-a 0.7s steps(1) 1; }
-.erh-title::after  { color: var(--magenta); animation: erh-glitch-b 0.7s steps(1) 1; }
+.erh-title::before { color: var(--status-playing);    animation: erh-glitch-a 0.7s steps(1) 1; }
+.erh-title::after  { color: var(--status-paused); animation: erh-glitch-b 0.7s steps(1) 1; }
 @keyframes erh-glitch-a {
   0%   { clip-path: inset(10% 0 55% 0); transform: translate(-4px, 0); }
   25%  { clip-path: inset(60% 0 10% 0); transform: translate(3px, 0); }
@@ -291,13 +341,13 @@ button {
   margin-top: 6px;
   font-size: 22px;
   font-weight: 600;
-  color: var(--cyan);
+  color: var(--sub);
 }
 .erh-album {
   margin-top: 2px;
   font-size: 15px;
   font-weight: 500;
-  color: var(--yellow-dim);
+  color: var(--main);
 }
 
 /* 再生位置:斜めのセグメントバー */
@@ -309,11 +359,11 @@ button {
 .erh-seg {
   flex: 1;
   height: 12px;
-  background: var(--yellow-faint);
+  background: var(--main-faint);
   transform: skewX(-24deg);
 }
-.erh-seg.on   { background: var(--yellow); }
-.erh-seg.head { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.erh-seg.on   { background: var(--main); }
+.erh-seg.head { background: var(--status-playing); box-shadow: 0 0 8px var(--status-playing); }
 
 .erh-time {
   display: flex;
@@ -322,7 +372,7 @@ button {
   font-size: 15px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--yellow-dim);
+  color: var(--main);
 }
 
 /* 操作ボタン */
@@ -343,31 +393,58 @@ button {
   border: none;
   outline: none;
   font: 600 13px "Rajdhani", "Hiragino Sans", sans-serif;
-  color: var(--yellow);
-  background: var(--yellow-faint);
+  color: var(--main);
+  background: var(--main-faint);
   cursor: pointer;
   clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
 }
 .erh-btn:hover,
-.erh-btn:focus-visible { background: var(--yellow); color: #000; }
+.erh-btn:focus-visible { background: var(--sub); color: #000; }
 .erh-btn svg { width: 17px; height: 17px; fill: currentColor; }
 .erh-btn svg.stroke { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; }
-.erh-btn.main { min-width: 60px; background: var(--yellow); color: #000; }
+.erh-btn.main { min-width: 60px; background: var(--main); color: #000; }
 .erh-btn.main:hover,
-.erh-btn.main:focus-visible { background: var(--cyan); }
+.erh-btn.main:focus-visible { background: var(--sub); }
 .erh-btn.repeat { margin-left: auto; }
-.erh-btn.repeat.active { color: var(--cyan); background: rgba(0, 240, 255, 0.16); }
+.erh-btn.repeat.active { color: var(--sub); background: var(--sub-faint); }
 .erh-btn.repeat.active:hover,
-.erh-btn.repeat.active:focus-visible { background: var(--cyan); color: #000; }
+.erh-btn.repeat.active:focus-visible { background: var(--sub); color: #000; }
 
 /* 何も再生していないとき */
 .erh-idle {
   padding: 18px 30px;
   font-size: 16px;
   font-weight: 600;
-  color: var(--yellow-dim);
+  color: var(--main);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .erh-title::before, .erh-title::after { animation: none; }
+}
+
+.erh-btn,
+.erh-theme {
+  transition: transform 0.08s, filter 0.08s, background 0.15s, color 0.15s;
+}
+
+/* 押している間:少し沈んで、明るくなる */
+.erh-btn:active,
+.erh-theme:active {
+  transform: translateY(1px) scale(0.96);
+  filter: brightness(1.25);
+}
+
+/* 押している間:アイコンがシアンとマゼンタに色ズレする */
+.erh-btn:active svg {
+  filter:
+    drop-shadow(-2px 0 var(--status-playing))
+    drop-shadow(2px 0 var(--status-paused));
+}
+
+/* 動きを減らす設定の人には、沈む動きを出さない */
+@media (prefers-reduced-motion: reduce) {
+  .erh-btn:active,
+  .erh-theme:active {
+    transform: none;
+  }
 }
