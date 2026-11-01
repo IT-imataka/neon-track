@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import "./App.css";
 import { invoke } from "@tauri-apps/api/core";
@@ -28,7 +28,8 @@ type HudProps = {
 	track : Track,
 	artwork : string | null,
 	theme : Theme,
-	onToggleTheme :() => void
+	onToggleTheme :() => void,
+	onCommand: (action : MusicAction) => void
 };
 
 type MusicAction = "playpause" | "next" | "previous" | `repeat_${RepeatMode}`;
@@ -68,10 +69,6 @@ const fmt = (sec : number) => {
 	const s = Math.max(0, Math.floor(sec));
 	return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 };
-
-const music = (action: MusicAction) => {
-	invoke("music_command", { action }).catch(console.error);
-}
 
 const Icon = {
 	prev: (
@@ -126,24 +123,34 @@ export default function App(){
 
 	const toggleTheme = () => {
 		setTheme(t => t === "david" ? "lucy" : "david");
-		console.log("テーマが呼ばれた",theme);
 	}
 
-	// 曲情報の描画
+	// 曲情報の描画（問い合わせ→取り直し）
+	const refresh = useCallback(async () => {
+		try {
+			const output = await invoke<string>("now_playing");
+			setTrack(parse(output));
+			setError(null);
+		} catch (e) {
+			setError(String(e));
+		}
+	},[]);
+
+	//1秒ごとのポーリング
 	useEffect (() => {
-		const tick = async () => {
-			try {
-				const output = await invoke<string>("now_playing");
-				setTrack(parse(output));
-				setError(null);
-			} catch (e) {
-				setError(String(e));
-			}
-		};
-		tick();
-		const id = setInterval(tick,1000);
+		refresh();
+		const id = setInterval(refresh,1000);
 		return () => clearInterval(id);
-	},[])
+	},[refresh])
+
+	const hadleCommand = async (action : MusicAction) => {
+		try {
+			await invoke("music_command",{ action });
+		} catch (e){
+			console.error(e);
+		}	
+		refresh();
+	}
 
 	// アートワーク情報の描画
 	const trackId = track?.id;
@@ -154,10 +161,17 @@ export default function App(){
 	
 	if (error) return <Idle message = {`エラー:${error}`} theme={theme}/>
 	if (!track) return <Idle message ="ミュージックで曲を再生すると、ここに表示されます" theme={theme}/>;
-	return <Hud track={track} artwork={artwork} onToggleTheme={toggleTheme} theme={theme}/>
+	return (
+	<Hud 
+	track={track}
+	artwork={artwork}
+	onToggleTheme={toggleTheme}
+	theme={theme}
+	onCommand={hadleCommand}/>
+	)
 }
 
-const Hud = ({track : t, artwork, theme, onToggleTheme} : HudProps) => {
+const Hud = ({track : t, artwork, theme, onToggleTheme, onCommand } : HudProps) => {
 	const playing = t.state === "playing";
 	const ratio = t.duration > 0 ? Math.min(t.position / t.duration, 1) : 0;
   const filled = Math.round(ratio * SEGMENTS);
@@ -203,19 +217,19 @@ const Hud = ({track : t, artwork, theme, onToggleTheme} : HudProps) => {
             </div>
 
             <div className="erh-ctrl">
-              <button className="erh-btn" title="前の曲" onClick={() => music("previous")}>
+              <button className="erh-btn" title="前の曲" onClick={() => onCommand("previous")}>
                 {Icon.prev}
               </button>
-              <button className="erh-btn main" title={playing ? "一時停止" : "再生"} onClick={() => music("playpause")}>
+              <button className="erh-btn main" title={playing ? "一時停止" : "再生"} onClick={() => onCommand("playpause")}>
                 {playing ? Icon.pause : Icon.play}
               </button>
-              <button className="erh-btn" title="次の曲" onClick={() => music("next")}>
+              <button className="erh-btn" title="次の曲" onClick={() => onCommand("next")}>
                 {Icon.next}
               </button>
               <button
                 className={`erh-btn repeat${t.repeat !== "off" ? " active" : ""}`}
                 title="クリックで切り替え"
-                onClick={() => music(`repeat_${NEXT_REPEAT[t.repeat]}`)}
+                onClick={() => onCommand(`repeat_${NEXT_REPEAT[t.repeat]}`)}
               >
                 {Icon.repeat}
                 {REPEAT_LABEL[t.repeat] || REPEAT_LABEL.off}
